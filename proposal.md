@@ -1,6 +1,6 @@
 # A OpenBSD VMM Accelerator Back-end for QEMU
 
-*Third draft*
+*Fourth draft*
 
 > Saeed Mahjoob, Shamsipour technical and vocational college
 > `saeed@cloud9p.org`
@@ -33,7 +33,7 @@ Controlling virtual machines is only possible via serial console, although it is
 to both implement and use, requires configuration in guests and disallows usage of
 operating systems that operate in graphical interface, such as Android and Windows.
 
-The current model of virtualization in OpenBSD is depicted in Figure 1.
+The current model of virtualization in OpenBSD is depicted in figure 1.
 
 ![Current VMM stack](vmd.svg)
 
@@ -83,14 +83,39 @@ At the request of user, emulator starts the virtual machine and sets up various 
 memory, bus and other hardware pieces you may think of, including CPU. But unlike the usual set,
 CPUs are not emulated^[Unless it is, but we are talking about hardware assisted virtualization],
 thus, it needs to ask the hardware itself to do the work. In doing so, we switch from
-emulator which runs in user-space, to the guest vCPU, executing instructions until some sort of special interrupts happen.
-In Intel terminology those interrupts are known as *VMExit*s, which can handle I/O requests, NMIs^[Non mask-able interrupts],
-requests to pause or shutdown the virtual machine and many other.
+emulator which runs in the host's user-space, to the guest's vCPU,
+executing instructions until some sort of special interrupts happen.
+Those interrupts are known as *VMExit*s, which can handle I/O requests, NMIs^[Non mask-able interrupts],
+requests to pause or shutdown the virtual machine and many other, and the switching between one
+guest to another (guest, or host) is known cpu-switch, like how context-switches work in operating systems.
 
 Once a *VMExit* is issued, it is up to the hypervisor to handle it, as its not of guest's concern
 nor the emulator. Hypervisor can then propagate the interrupt to the emulator, handle it on it's
-own^[Overhead of context-switches sometimes makes this approach worth the trouble, FreeBSD does this for example for some devices],
+own^[Overhead of context-switches sometimes makes this approach worth the trouble,
+for example FreeBSD does this for example for some devices],
 halt the (guest) machine (to debug it) or ignore it and resume the virtual machine.
+
+A pseudo-code for a (high-level) virtual machine can be written as the following:
+```
+fd = open("/dev/vmm", ...)
+ioctl(fd, VMM_IOC_CREATE, ...)
+
+while(1)
+{
+	ioctl(fd, VMM_IOC_RUN, ...)
+	switch(exit_reason) {
+	case VMX_EXIT_IO:
+		/* do I/O */
+		break;
+		
+	case VMX_EXIT_EXTINT:
+		/* handle intrrupts */
+		break;
+		
+	/* more of the same... */
+   }
+}
+```
 
 ### QEMU Accelerator
 QEMU already ships with several accelerators, some of which are:
@@ -113,6 +138,9 @@ $ qemu-system-x86_64 --accel=nvmm <...>
 
 Would enable that accelerator. Each accelerator controls the state of vCPU, which is defined as
 a pointer-to-struct shared between the hardware emulator and CPU accelerators, called `CPUState`.
+Note that the representation of vCPU in the hypervisor may obviously differ with what QEMU thinks,
+that's up to us to keep those two in sync:
+
 ```
 struct CPUState {
     int thread_id;
@@ -132,9 +160,18 @@ struct CPUState {
 };
 ```
 
-Each accelerator implements two classes, `AccelClass` and `AccelOpsClass`
+Each accelerator implements two classes, `AccelClass` and `AccelOpsClass`.
+<TODO>
+
 ## Related work and sources
 Sources of this document is available at ![Github](https://github.com/hjicks/gathesis).
+
+### Wikipedia
+- https://en.wikipedia.org/wiki/Popek_and_Goldberg_virtualization_requirements
+
+### OSTEP
+
+- https://pages.cs.wisc.edu/~remzi/OSTEP/vmm-intro.pdf
 
 ### VMM
 
