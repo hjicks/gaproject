@@ -1,10 +1,12 @@
 # A OpenBSD VMM Accelerator Back-end for QEMU
 
-*Fourth draft*
+*Fifth draft*
 
 > Saeed Mahjoob, Shamsipour technical and vocational college
 > `saeed@cloud9p.org`
 
+
+[TODO: vmctl]
 ## Abstract
 QEMU^[[Quick EMUlator: A Portable machine emulator](https://qemu.org)]
 is the de-facto virtualization tool in open-source operating systems,
@@ -57,6 +59,11 @@ that TCG currently suffers from, as shown in Figure 2.
 
 ![Proposed VMM stack](qemu.svg)
 
+## Previous work
+Solo5 [] is a portable unikernel that runs portably across multiple operating systems using virtualzation backends such as KVM or VMM, without help of emulators (i.e: no vmd), which 
+[TODO: VMM]
+[TODO: NVMM]
+
 ## Implementation
 There are two major changes that must be done to currently available software:
 
@@ -72,6 +79,8 @@ On the other hand VMM changes are mostly made out of enhancements to current inf
 of OpenBSD, such as adding features that makes VMM behave more like KVM or NVMM, fixing bugs,
 and other misc changes. Unlike Changes on QEMU, these are made out of kernel-space code,
 which is less trivial and more prone to difficult to debug bugs.
+
+[TODO: LAPIC]
 
 ### Inside of a hypervisor
 Inner workings of hypervisors, are mostly similar, while details do differ.
