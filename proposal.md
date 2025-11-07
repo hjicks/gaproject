@@ -1,6 +1,6 @@
 # A OpenBSD VMM Accelerator Back-end for QEMU
 
-*Fifth draft*
+*Sixth draft*
 
 > Saeed Mahjoob, Shamsipour technical and vocational college
 > `saeed@cloud9p.org`
@@ -35,7 +35,7 @@ operating systems that operate in graphical interface, such as Android and Windo
 
 The current model of virtualization in OpenBSD is depicted in figure 1.
 
-![Current VMM stack](vmd.svg)
+![Current VMM stack](img/vmd.svg)
 
 QEMU, on the other hand can emulate vast amount of devices and supports decent range of workflows.
 However, the overhead of software emulation is very high and
@@ -55,7 +55,7 @@ The solution we propose is to implement a back-end which talks to
 and handles management of vCPUs^[Virtual CPUs], without the overhead of emulation
 that TCG currently suffers from, as shown in Figure 2.
 
-![Proposed VMM stack](qemu.svg)
+![Proposed VMM stack](img/qemu.svg)
 
 ## Related work
 ### VMM
@@ -98,7 +98,7 @@ which is less trivial and more prone to difficult to debug bugs.
 Inner workings of hypervisors, are mostly similar, while details do differ.
 Figure 3 shows a simplified version of virtual machine life cycle.
 
-![Life cycle of a virtual machine](vmlifecycle.svg)
+![Life cycle of a virtual machine](img/vmlifecycle.svg)
 
 At the request of user, emulator starts the virtual machine and sets up various peripherals,
 memory, bus and other hardware pieces you may think of, including CPU. But unlike the usual set,
