@@ -1,6 +1,6 @@
 # A OpenBSD VMM Accelerator Back-end for QEMU
 
-*Sixth draft*
+*Seventh draft*
 
 > Saeed Mahjoob, Shamsipour technical and vocational college
 > `saeed@cloud9p.org`
@@ -19,11 +19,11 @@ accelerator, which is the current default on OpenBSD.
 ## Introduction
 In last few decades, virtualization has become one of the most important aspects of modern
 computing, from servers, to desktops and embedded solutions for isolation capabilities,
-ease of use and security gains attained by the hypervisors and virtual machines.
+ease of use and security gains attained by the virtual machines.
 
 OpenBSD operating system, while fairly well known for its security oriented
 software stack (OpenSSH, `doas`, LibreSSL and the pf firewall to name a few) have historically
-been behind in the virtualization until the arrival of
+been behind other in the virtualization until the arrival of
 [*vmm*(4)](https://openbsd.org/vmm) driver and [*vmd*(8)](https://man.openbsd.org/vmd)
 daemon in 2016. While this stack works fairly well for what it promises to offer,
 it only focuses on few specific workflows. For example it only offers
@@ -39,15 +39,15 @@ The current model of virtualization in OpenBSD is depicted in figure 1.
 
 QEMU, on the other hand can emulate vast amount of devices and supports decent range of workflows.
 However, the overhead of software emulation is very high and
-the default acceleration back-end which is called has inadequate performance for modern software.
+the default acceleration back-end which is called TCG has inadequate performance for modern software.
 
-The standard QEMU solution for this is to implement hardware assisted accelerator,
+The standard QEMU solution for this is to implement a hardware assisted accelerator,
 which talks to a hypervisor such as Linux's KVM^[[Kernel Virtual Machine](https://linux-kvm.org)]
 or Xen^[https://xenproject.org].
 
 While it might have been possible to port KVM or Xen to OpenBSD, it would have required
 tremendous effort, as the hypervisors are generally very complex, highly tied to both software environment
-and hardware, and can cause kernel panics since they include kernel level code.
+and hardware platform, and can cause kernel panics since they include kernel level code.
 Thus reusing existing infrastructure would get us to the goal with less effort and better results.
 
 The solution we propose is to implement a back-end which talks to
@@ -98,7 +98,7 @@ which is less trivial and more prone to difficult to debug bugs.
 Inner workings of hypervisors, are mostly similar, while details do differ.
 Figure 3 shows a simplified version of virtual machine life cycle.
 
-![Life cycle of a virtual machine](img/vmlifecycle.svg)
+![Life cycle of a virtual machine](img/lifecycle.svg)
 
 At the request of user, emulator starts the virtual machine and sets up various peripherals,
 memory, bus and other hardware pieces you may think of, including CPU. But unlike the usual set,
@@ -113,26 +113,23 @@ guest to another (guest, or host) is known cpu-switch, like how context-switches
 Once a *VMExit* is issued, it is up to the hypervisor to handle it, as its not of guest's concern
 nor the emulator. Hypervisor can then propagate the interrupt to the emulator, handle it on it's
 own^[Overhead of context-switches sometimes makes this approach worth the trouble,
-for example FreeBSD does this for example for some devices],
-halt the (guest) machine (to debug it) or ignore it and resume the virtual machine.
+As an example, FreeBSD does this for some devices],
+halt the (guest) machine ^[to debug it] or ignore it and resume the execution.
 
 A pseudo-code for a (high-level) virtual machine can be written as the following:
 ```
 fd = open("/dev/vmm", ...)
 ioctl(fd, VMM_IOC_CREATE, ...)
 
-while(1)
-{
+while(1) {
 	ioctl(fd, VMM_IOC_RUN, ...)
 	switch(exit_reason) {
 	case VMX_EXIT_IO:
 		/* do I/O */
-		break;
-		
+	
 	case VMX_EXIT_EXTINT:
 		/* handle intrrupts */
-		break;
-		
+	
 	/* more of the same... */
    }
 }
@@ -185,7 +182,7 @@ Each accelerator implements two classes, `AccelClass` and `AccelOpsClass`, the f
 accelerator's internal state, and the second is operations it offers to QEMU.
 
 ## Sources
-Sources of this document is available at [Github](https://github.com/hjicks/gathesis).
+Sources of this document is available at [https://github.com/hjciks/gathesis](https://github.com/hjicks/gathesis).
 
 ### Wikipedia
 - https://en.wikipedia.org/wiki/Popek_and_Goldberg_virtualization_requirements
